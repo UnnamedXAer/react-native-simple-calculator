@@ -12,23 +12,66 @@ class App extends React.Component {
 		super(props);
 		this.state = {
 			result: 0,
-			equision: ""
+			equision: "0"
 		}
 	}
 
 	buttonPresHandler = (ev, arg) => {
+		let equision = this.state.equision;
 		switch (arg) {
 			case '=':
 				const result = eval(String(this.state.equision).replace(",", "."));
 				this.setState({result: result});
 				break;
 			case 'C':
-				this.setState({result: 0, equision: ""});
+				this.setState({result: 0, equision: "0"});
+				break;
+			case ',':
+				const marks = ["+", "-", "*", "/"];
+
+				let lastIndexOfMark = -2;
+				marks.forEach(x => {
+					const currLastIndex = equision.lastIndexOf(x);
+					if (currLastIndex > -1 && lastIndexOfMark < currLastIndex) {
+						lastIndexOfMark = currLastIndex;
+					}
+				});
+				const lastIndexOfComma = equision.lastIndexOf(',');
+
+				if (lastIndexOfComma < 0 || lastIndexOfComma < lastIndexOfMark) {
+					if (marks.indexOf(equision.substring(equision.length-1)) >= 0) {
+						equision += "0";
+					}
+					equision += arg;
+				}
 				break;
 			default:
-				const equision = this.state.equision + arg;
-				this.setState({equision: equision})
+				const isArgMark = isNaN(parseInt(arg, 10));
+				if (isArgMark) {
+					if (!isNaN(parseInt(equision.substring(equision.length-1), 10))) {
+						// when last char in equision is number then add mark.
+						equision += arg;
+					}
+					else {
+						// when last char is mark then replace it with new one.
+						equision = equision.substring(0, equision.length-1) + arg;
+					}
+				}
+				else {
+					// arg is number
+
+					if (equision == "0") {
+						// when equision == "0" repalace it with arg
+						equision = arg;							
+					}
+					else {
+						equision += arg;
+					}
+				}
 				break;
+			}
+		if (this.state.equision != equision) {
+			this.setState({equision: equision});
 		}
 	}
 
@@ -62,7 +105,7 @@ class App extends React.Component {
 							<TouchableOpacity style={[styles.button, {backgroundColor: "#0fba6a"}]} onPress={(ev) => this.buttonPresHandler(ev, ",")}>
 								<Text style={styles.buttonText}>,</Text>
 							</TouchableOpacity>
-							<TouchableOpacity style={styles.button} onPress={(ev) => this.buttonPresHandler(ev, 0)}>
+							<TouchableOpacity style={styles.button} onPress={(ev) => this.buttonPresHandler(ev, "0")}>
 								<Text style={styles.buttonText}>0</Text>
 							</TouchableOpacity>
 							<TouchableOpacity style={[styles.button, {backgroundColor: "#0fba6a"}]} onPress={(ev) => this.buttonPresHandler(ev, "=")}>
@@ -92,19 +135,25 @@ const styles = StyleSheet.create({
 	},
 	equisionView: {
 		padding: 25,
-		flex: 2
+		flex: 2,
+		display: "flex",
+		justifyContent: "center",
+		alignItems: "flex-end"
 	},
 	equisionText: {
-		fontSize: 25
+		fontSize: 40
 	},
 	resultView: {
 		backgroundColor: "darkblue",
 		padding: 25,
-		flex: 1
+		flex: 1,
+		display: "flex",
+		justifyContent: "center",
+		alignItems: "flex-end"
 	},
 	resultText: {
 		color: "white",
-		fontSize: 25
+		fontSize: 30
 	},
 	buttonsView: {
 		backgroundColor: "#d6ab1f",
